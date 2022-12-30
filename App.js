@@ -11,11 +11,12 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
   const [todos, setTodos] = useState([]);
-  const [category, setCategory] = useState("js");
+  const [category, setCategory] = useState("");
   const [text, setText] = useState("");
   const [editText, setEditText] = useState("");
 
@@ -71,12 +72,35 @@ export default function App() {
     setEditText("");
   };
 
+  const setCat = async (cat) => {
+    setCategory(cat);
+    await AsyncStorage.setItem("category", cat);
+  };
+
+  useEffect(() => {
+    const saveTodos = async () => {
+      await AsyncStorage.setItem("todos", JSON.stringify(todos));
+    };
+    if (todos.length > 0) saveTodos();
+  }, [todos]);
+
+  useEffect(() => {
+    const getDate = async () => {
+      const resp_todos = await AsyncStorage.getItem("todos");
+      const resp_cat = await AsyncStorage.getItem("category"); // undefined / null
+
+      setTodos(JSON.parse(resp_todos) ?? []);
+      setCategory(resp_cat ?? "js");
+    };
+    getDate();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
       <View style={styles.buttonBox}>
         <TouchableOpacity
-          onPress={() => setCategory("js")}
+          onPress={() => setCat("js")}
           style={{
             ...styles.button,
             backgroundColor: category === "js" ? "#0FBCF9" : "gray",
@@ -85,7 +109,7 @@ export default function App() {
           <Text style={styles.buttonText}>Javascript</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCategory("react")}
+          onPress={() => setCat("react")}
           style={{
             ...styles.button,
             backgroundColor: category === "react" ? "#0FBCF9" : "gray",
@@ -94,7 +118,7 @@ export default function App() {
           <Text style={styles.buttonText}>React</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCategory("ct")}
+          onPress={() => setCat("ct")}
           style={{
             ...styles.button,
             backgroundColor: category === "ct" ? "#0FBCF9" : "gray",
