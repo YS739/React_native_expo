@@ -9,17 +9,24 @@ import { SimpleLineIcons } from "@expo/vector-icons";
 export default function App() {
   // input에 입력된 내용 받아오기
   const [text, setText] = useState();
+  const todos = [],
+  const [todo, setTodo] = useState({});
+  const [state, setState] = useState({
+    selectedButton: "",
+  });
 
   const onChangeText = (text) => {
     setText(text);
   };
 
-  const [state, setState] = useState({
-    selectedButton: "",
-  });
+  const addTodo = (text) => {
+    setTodo([...todos, text]);
+  };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 1 }}>
+      {/* flex:1 을 안 쓰면 내용이 아래로 stretch 되지 않아 상단에 압축된 것처럼 보임 */}
+      <StatusBar style="auto" />
       {/* Category buttons */}
       <ButtonBox>
         <Buttons
@@ -56,11 +63,10 @@ export default function App() {
         value={text}
         placeholder="    Enter your task"
         onChangeText={onChangeText}
+        onSubmitEditing={addTodo}
       />
       <BorderLine />
-      <View>
-        <StatusBar style="auto" />
-      </View>
+      <View></View>
       {/* Todo List */}
       <ScrollView>
         <ToDoList>
