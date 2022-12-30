@@ -8,19 +8,31 @@ import { SimpleLineIcons } from "@expo/vector-icons";
 
 export default function App() {
   // input에 입력된 내용 받아오기
-  const [text, setText] = useState();
-  const todos = [],
-  const [todo, setTodo] = useState({});
-  const [state, setState] = useState({
-    selectedButton: "",
-  });
-
+  const [text, setText] = useState("");
   const onChangeText = (text) => {
     setText(text);
   };
 
-  const addTodo = (text) => {
-    setTodo([...todos, text]);
+  // 버튼 눌렀을 때 색 변경
+  const [state, setState] = useState({
+    selectedButton: "",
+  });
+
+  // Add todo
+  const [todos, setTodos] = useState();
+  const [category, setCategory] = useState("js");
+
+  const newTodo = {
+    id: Date.now(),
+    text,
+    isDone: false,
+    isEdit: false,
+    category,
+  };
+
+  const addTodo = () => {
+    setTodos((prev) => [...prev, newTodo]);
+    setText("");
   };
 
   return (
@@ -69,28 +81,25 @@ export default function App() {
       <View></View>
       {/* Todo List */}
       <ScrollView>
-        <ToDoList>
+       
+ 
+        {todos.map((todo)=>(
+                 <ToDoList>
           <ToDo>
-            <ToDoText>신나는 실행컨텍스트 공부</ToDoText>
-            <IconBox>
-              <Ionicons name="checkbox-sharp" size={24} color="black" />
-              <SimpleLineIcons name="note" size={24} color="black" />
-              <FontAwesome name="trash-o" size={24} color="black" />
-            </IconBox>
-          </ToDo>
-          <ToDo>
-            <ToDoText>너무 좋은 실행컨텍스트 공부</ToDoText>
-            <IconBox>
-              <Ionicons name="checkbox-sharp" size={24} color="black" />
-              <SimpleLineIcons name="note" size={24} color="black" />
-              <FontAwesome name="trash-o" size={24} color="black" />
-            </IconBox>
-          </ToDo>
-        </ToDoList>
+          <ToDoText>{todo.text}</ToDoText>
+          <IconBox>
+            <Ionicons name="checkbox-sharp" size={24} color="black" />
+            <SimpleLineIcons name="note" size={24} color="black" />
+            <FontAwesome name="trash-o" size={24} color="black" />
+          </IconBox>
+        </ToDo>
+          </ToDoList>
+          )}
+
+      
       </ScrollView>
     </SafeAreaView>
   );
-}
 
 // Buttons
 const ButtonBox = styled.View`
