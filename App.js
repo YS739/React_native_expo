@@ -6,46 +6,97 @@ import {
   Text,
   View,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
+import { useState } from "react";
 
 export default function App() {
+  const [todos, setTodos] = useState([]);
+  const [category, setCategory] = useState("js");
+  const [text, setText] = useState("");
+
+  const newTodo = {
+    id: Date.now(),
+    text,
+    isDone: false,
+    isEdit: false,
+    category,
+  };
+
+  const addTodo = () => {
+    setTodos((prev) => [...prev, newTodo]);
+    setTodos("");
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
       <View style={styles.buttonBox}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          onPress={() => setCategory("js")}
+          style={{
+            ...styles.button,
+            backgroundColor: category === "js" ? "#0FBCF9" : "gray",
+          }}
+        >
           <Text style={styles.buttonText}>Javascript</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          onPress={() => setCategory("react")}
+          style={{
+            ...styles.button,
+            backgroundColor: category === "react" ? "#0FBCF9" : "gray",
+          }}
+        >
           <Text style={styles.buttonText}>React</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          onPress={() => setCategory("ct")}
+          style={{
+            ...styles.button,
+            backgroundColor: category === "ct" ? "#0FBCF9" : "gray",
+          }}
+        >
           <Text style={styles.buttonText}>Coding Test</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.inputWrapper}>
-        <TextInput style={styles.input} />
+        <TextInput
+          placeholder="Enter your task"
+          value={text}
+          style={styles.input}
+          onChangeText={setText}
+          onSubmitEditing={addTodo}
+        />
       </View>
-      <View style={styles.todoWrapper}>
-        <Text>신나는 실행 컨텍스트 공부</Text>
-        <View style={styles.icons}>
-          <AntDesign name="checksquare" size={24} color="black" />
-          <Feather
-            style={{ marginLeft: 10 }}
-            name="edit"
-            size={24}
-            color="black"
-          />
-          <AntDesign
-            style={{ marginLeft: 10 }}
-            name="delete"
-            size={24}
-            color="black"
-          />
-        </View>
-      </View>
+      <ScrollView>
+        {todos.map((todo) => {
+          if (category === todo.category) {
+            return (
+              <View key={todo.id} style={styles.todoWrapper}>
+                <Text>{todo.text}</Text>
+                <View style={styles.icons}>
+                  <AntDesign name="checksquare" size={24} color="black" />
+                  <Feather
+                    style={{ marginLeft: 10 }}
+                    name="edit"
+                    size={24}
+                    color="black"
+                  />
+                  <AntDesign
+                    style={{ marginLeft: 10 }}
+                    name="delete"
+                    size={24}
+                    color="black"
+                  />
+                </View>
+              </View>
+            );
+          }
+        })}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -58,6 +109,7 @@ const styles = StyleSheet.create({
   buttonBox: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginHorizontal: 10,
   },
 
   button: {
@@ -79,10 +131,11 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     marginTop: 15,
     marginBottom: 15,
+    marginHorizontal: 10,
   },
 
   input: {
-    borderWith: 1,
+    borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 20,
   },
@@ -94,7 +147,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     marginBottom: 10,
-    backgroundColor: "gray",
+    marginHorizontal: 10,
+
+    backgroundColor: "lightgray",
   },
 
   icons: {
