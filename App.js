@@ -27,7 +27,7 @@ export default function App() {
 
   const addTodo = () => {
     setTodos((prev) => [...prev, newTodo]);
-    setTodos("");
+    setText("");
   };
 
   return (
@@ -77,7 +77,7 @@ export default function App() {
             return (
               <View key={todo.id} style={styles.todoWrapper}>
                 <Text>{todo.text}</Text>
-                <View style={styles.icons}>
+                <View style={{ flexDirection: "row" }}>
                   <AntDesign name="checksquare" size={24} color="black" />
                   <Feather
                     style={{ marginLeft: 10 }}
@@ -150,9 +150,5 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
 
     backgroundColor: "lightgray",
-  },
-
-  icons: {
-    flexDirection: "row",
   },
 });
