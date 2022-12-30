@@ -7,6 +7,7 @@ import {
   View,
   TextInput,
   ScrollView,
+  Alert,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
@@ -38,8 +39,19 @@ export default function App() {
   };
 
   const deleteTodo = (id) => {
-    const newTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(newTodos);
+    Alert.alert("Todo 삭제", "정말 삭제하시겠습니까?", [
+      {
+        text: "Cancel",
+        onPress: () => console.log("취소 버튼!"),
+      },
+      {
+        text: "OK",
+        onPress: () => {
+          const newTodos = todos.filter((todo) => todo.id !== id);
+          setTodos(newTodos);
+        },
+      },
+    ]);
   };
 
   return (
