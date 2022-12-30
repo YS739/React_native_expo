@@ -11,7 +11,7 @@ export default function App() {
   const [text, setText] = useState("");
 
   // Add todo
-  const [todos, setTodos] = useState();
+  const [todos, setTodos] = useState({});
 
   const newTodo = {
     id: Date.now(),
