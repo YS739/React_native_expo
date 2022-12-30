@@ -13,14 +13,8 @@ export default function App() {
     setText(text);
   };
 
-  // 버튼 눌렀을 때 색 변경
-  const [state, setState] = useState({
-    selectedButton: "",
-  });
-
   // Add todo
   const [todos, setTodos] = useState();
-  const [category, setCategory] = useState("js");
 
   const newTodo = {
     id: Date.now(),
@@ -35,6 +29,9 @@ export default function App() {
     setText("");
   };
 
+  // 버튼 눌렀을 때 색 변경
+  const [category, setCategory] = useState("js");
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       {/* flex:1 을 안 쓰면 내용이 아래로 stretch 되지 않아 상단에 압축된 것처럼 보임 */}
@@ -43,28 +40,25 @@ export default function App() {
       <ButtonBox>
         <Buttons
           style={{
-            backgroundColor:
-              state.selectedButton === "button1" ? "skyblue" : "gray",
+            backgroundColor: category === "js" ? "skyblue" : "gray",
           }}
-          onPress={() => setState({ selectedButton: "button1" })}
+          onPress={() => setCategory("js")}
         >
           <ButtonText>Javascript</ButtonText>
         </Buttons>
         <Buttons
           style={{
-            backgroundColor:
-              state.selectedButton === "button2" ? "skyblue" : "gray",
+            backgroundColor: category === "react" ? "skyblue" : "gray",
           }}
-          onPress={() => setState({ selectedButton: "button2" })}
+          onPress={() => setCategory("react")}
         >
           <ButtonText>React</ButtonText>
         </Buttons>
         <Buttons
           style={{
-            backgroundColor:
-              state.selectedButton === "button3" ? "skyblue" : "gray",
+            backgroundColor: category === "ct" ? "skyblue" : "gray",
           }}
-          onPress={() => setState({ selectedButton: "button3" })}
+          onPress={() => setCategory("ct")}
         >
           <ButtonText>Coding Test</ButtonText>
         </Buttons>
@@ -81,25 +75,22 @@ export default function App() {
       <View></View>
       {/* Todo List */}
       <ScrollView>
-       
- 
-        {todos.map((todo)=>(
-                 <ToDoList>
-          <ToDo>
-          <ToDoText>{todo.text}</ToDoText>
-          <IconBox>
-            <Ionicons name="checkbox-sharp" size={24} color="black" />
-            <SimpleLineIcons name="note" size={24} color="black" />
-            <FontAwesome name="trash-o" size={24} color="black" />
-          </IconBox>
-        </ToDo>
-          </ToDoList>
-          )}
-
-      
+        {todos.map((todo) => {
+          <ToDoList>
+            <ToDo>
+              <ToDoText>{todo.text}</ToDoText>
+              <IconBox>
+                <Ionicons name="checkbox-sharp" size={24} color="black" />
+                <SimpleLineIcons name="note" size={24} color="black" />
+                <FontAwesome name="trash-o" size={24} color="black" />
+              </IconBox>
+            </ToDo>
+          </ToDoList>;
+        })}
       </ScrollView>
     </SafeAreaView>
   );
+}
 
 // Buttons
 const ButtonBox = styled.View`
