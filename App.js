@@ -9,9 +9,6 @@ import { SimpleLineIcons } from "@expo/vector-icons";
 export default function App() {
   // input에 입력된 내용 받아오기
   const [text, setText] = useState("");
-  const onChangeText = (text) => {
-    setText(text);
-  };
 
   // Add todo
   const [todos, setTodos] = useState();
@@ -31,6 +28,11 @@ export default function App() {
 
   // 버튼 눌렀을 때 색 변경
   const [category, setCategory] = useState("js");
+
+  // 체크박스 이모티콘 클릭 했을 때
+  // 1. id를 매개변수로 받는다.
+  // 2. id에 해당하는 배열의 요소를 찾는다.
+  // 3. 그 배열의 요소에 isDone 값을 찾아 setTodo
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -68,7 +70,7 @@ export default function App() {
       <StyledTextInput
         value={text}
         placeholder="    Enter your task"
-        onChangeText={onChangeText}
+        onChangeText={setText}
         onSubmitEditing={addTodo}
       />
       <BorderLine />
@@ -76,16 +78,20 @@ export default function App() {
       {/* Todo List */}
       <ScrollView>
         {todos.map((todo) => {
-          <ToDoList>
-            <ToDo>
-              <ToDoText>{todo.text}</ToDoText>
-              <IconBox>
-                <Ionicons name="checkbox-sharp" size={24} color="black" />
-                <SimpleLineIcons name="note" size={24} color="black" />
-                <FontAwesome name="trash-o" size={24} color="black" />
-              </IconBox>
-            </ToDo>
-          </ToDoList>;
+          if (category === todo.category) {
+            return (
+              <ToDoList key={todo.id}>
+                <ToDo>
+                  <ToDoText>{todo.text}</ToDoText>
+                  <IconBox>
+                    <Ionicons name="checkbox-sharp" size={24} color="black" />
+                    <SimpleLineIcons name="note" size={24} color="black" />
+                    <FontAwesome name="trash-o" size={24} color="black" />
+                  </IconBox>
+                </ToDo>
+              </ToDoList>
+            );
+          }
         })}
       </ScrollView>
     </SafeAreaView>
