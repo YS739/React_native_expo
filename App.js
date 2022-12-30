@@ -17,6 +17,7 @@ export default function App() {
   const [todos, setTodos] = useState([]);
   const [category, setCategory] = useState("js");
   const [text, setText] = useState("");
+  const [editText, setEditText] = useState("");
 
   const newTodo = {
     id: Date.now(),
@@ -52,6 +53,22 @@ export default function App() {
         },
       },
     ]);
+  };
+
+  const setEdit = (id) => {
+    const newTodos = [...todos];
+    const idx = newTodos.findIndex((todo) => todo.id === id);
+    newTodos[idx].isEdit = !newTodos[idx].isEdit;
+    setTodos(newTodos);
+  };
+
+  const editTodo = (id) => {
+    const newTodos = [...todos];
+    const idx = newTodos.findIndex((todo) => todo.id === id);
+    newTodos[idx].text = editText;
+    newTodos[idx].isEdit = false;
+    setTodos(newTodos);
+    setEditText("");
   };
 
   return (
@@ -100,23 +117,35 @@ export default function App() {
           if (category === todo.category) {
             return (
               <View key={todo.id} style={styles.todoWrapper}>
-                <Text
-                  style={{
-                    textDecorationLine: todo.isDone ? "line-through" : "none",
-                  }}
-                >
-                  {todo.text}
-                </Text>
+                {todo.isEdit ? (
+                  <TextInput
+                    onSubmitEditing={() => editTodo(todo.id)}
+                    value={editText}
+                    onChangeText={setEditText}
+                    style={{ backgroundColor: "white", flex: 1 }}
+                  />
+                ) : (
+                  <Text
+                    style={{
+                      textDecorationLine: todo.isDone ? "line-through" : "none",
+                    }}
+                  >
+                    {todo.text}
+                  </Text>
+                )}
+
                 <View style={{ flexDirection: "row" }}>
                   <TouchableOpacity onPress={() => setDone(todo.id)}>
                     <AntDesign name="checksquare" size={24} color="black" />
                   </TouchableOpacity>
-                  <Feather
-                    style={{ marginLeft: 10 }}
-                    name="edit"
-                    size={24}
-                    color="black"
-                  />
+                  <TouchableOpacity onPress={() => setEdit(todo.id)}>
+                    <Feather
+                      style={{ marginLeft: 10 }}
+                      name="edit"
+                      size={24}
+                      color="black"
+                    />
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
                     <AntDesign
                       style={{ marginLeft: 10 }}
