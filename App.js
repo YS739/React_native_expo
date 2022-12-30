@@ -30,6 +30,18 @@ export default function App() {
     setText("");
   };
 
+  const setDone = (id) => {
+    const newTodos = [...todos];
+    const idx = newTodos.findIndex((todo) => todo.id === id);
+    newTodos[idx].isDone = !newTodos[idx].isDone;
+    setTodos(newTodos);
+  };
+
+  const deleteTodo = (id) => {
+    const newTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(newTodos);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
@@ -76,21 +88,31 @@ export default function App() {
           if (category === todo.category) {
             return (
               <View key={todo.id} style={styles.todoWrapper}>
-                <Text>{todo.text}</Text>
+                <Text
+                  style={{
+                    textDecorationLine: todo.isDone ? "line-through" : "none",
+                  }}
+                >
+                  {todo.text}
+                </Text>
                 <View style={{ flexDirection: "row" }}>
-                  <AntDesign name="checksquare" size={24} color="black" />
+                  <TouchableOpacity onPress={() => setDone(todo.id)}>
+                    <AntDesign name="checksquare" size={24} color="black" />
+                  </TouchableOpacity>
                   <Feather
                     style={{ marginLeft: 10 }}
                     name="edit"
                     size={24}
                     color="black"
                   />
-                  <AntDesign
-                    style={{ marginLeft: 10 }}
-                    name="delete"
-                    size={24}
-                    color="black"
-                  />
+                  <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
+                    <AntDesign
+                      style={{ marginLeft: 10 }}
+                      name="delete"
+                      size={24}
+                      color="black"
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
             );
