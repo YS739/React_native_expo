@@ -1,26 +1,28 @@
 import { StatusBar } from "expo-status-bar";
 import {
-  StyleSheet,
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
   View,
-  Text,
   Alert,
+  TextInput,
 } from "react-native";
 import styled from "@emotion/native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { SimpleLineIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
-  // input에 입력된 내용 받아오기
-  const [text, setText] = useState("");
   // Add todo
   const [todos, setTodos] = useState([]);
-  // 버튼 눌렀을 때 색 변경
-  const [category, setCategory] = useState("js"); //js, react, ct
+  // 버튼 눌렀을 때 색 변경, 새로고침 시 유지
+  const [category, setCategory] = useState(""); //js, react, ct
+  // input에 입력된 내용 받아오기
+  const [text, setText] = useState("");
+  // 수정하기
+  const [editText, setEditText] = useState("");
 
   const newTodo = {
     id: Date.now(),
@@ -45,22 +47,61 @@ export default function App() {
 
   // 삭제하기
   const deleteTodo = (id) => {
-    Alert.alert("Todo 삭제", "정말 삭제하시겠습니까?"),
-      [
-        {
-          text: "취소",
-          style: "cancel",
-          onPress: () => console.log("취소 클릭!"),
+    Alert.alert("Todo 삭제", "정말 삭제하시겠습니까?", [
+      {
+        text: "취소",
+        style: "cancel",
+        onPress: () => console.log("취소 클릭!"),
+      },
+      {
+        text: "삭제",
+        style: "destructive",
+        onPress: () => {
+          const newTodos = todos.filter((todo) => todo.id !== id);
+          setTodos(newTodos);
         },
-        {
-          text: "삭제",
-          onPress: () => {
-            const newTodos = todos.filter((todo) => todo.id !== id);
-            setTodos(newTodos);
-          },
-        },
-      ];
+      },
+    ]);
   };
+
+  const setEdit = (id) => {
+    const newTodos = [...todos];
+    const idx = newTodos.findIndex((todo) => todo.id === id);
+    newTodos[idx].isEdit = !newTodos[idx].isEdit;
+    setTodos(newTodos);
+  };
+
+  const editTodo = (id) => {
+    const newTodos = [...todos];
+    const inx = newTodos.findIndex((todo) => todo.id === id);
+    newTodos[idx].text = editText;
+    newTodos[idx].isEdit = false;
+    setTodos(newTodos);
+  };
+
+  // 새로고침해도 유지
+  const setCat = async (cat) => {
+    setCategory(cat);
+    await AsyncStorage.setItem("category", cat);
+  };
+
+  useEffect(() => {
+    const saveTodos = async () => {
+      await AsyncStorage.setItem("todos", JSON.stringify(todos));
+    };
+    if (todos.length > 0) saveTodos();
+  }, [todos]);
+
+  useEffect(() => {
+    const getData = async () => {
+      const resp_todos = await AsyncStorage.getItem("todos");
+      const resp_cat = await AsyncStorage.getItem("category");
+
+      setTodos(JSON.parse(resp_todos));
+      setCategory(resp_cat ?? "js");
+    };
+    getData();
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -71,7 +112,7 @@ export default function App() {
           style={{
             backgroundColor: category === "js" ? "skyblue" : "gray",
           }}
-          onPress={() => setCategory("js")}
+          onPress={() => setCat("js")}
         >
           <ButtonText>Javascript</ButtonText>
         </Buttons>
@@ -79,7 +120,7 @@ export default function App() {
           style={{
             backgroundColor: category === "react" ? "skyblue" : "gray",
           }}
-          onPress={() => setCategory("react")}
+          onPress={() => setCat("react")}
         >
           <ButtonText>React</ButtonText>
         </Buttons>
@@ -87,7 +128,7 @@ export default function App() {
           style={{
             backgroundColor: category === "ct" ? "skyblue" : "gray",
           }}
-          onPress={() => setCategory("ct")}
+          onPress={() => setCat("ct")}
         >
           <ButtonText>Coding Test</ButtonText>
         </Buttons>
@@ -107,15 +148,24 @@ export default function App() {
         {todos.map((todo) => {
           if (category === todo.category) {
             return (
-              <View key={todo.id} style={styles.task}>
-                <Text
-                  style={{
-                    textDecorationLine: todo.isDone ? "line-through" : "none",
-                  }}
-                >
-                  {todo.text}
-                </Text>
-                <View style={{ flexDirection: "row" }}>
+              <ToDo key={todo.id}>
+                {todo.isEdit ? (
+                  <TextInput
+                    onSubmitEditing={() => editTodo(todo.id)}
+                    onChangeText={setEditText}
+                    value={editText}
+                    style={{ backgroundColor: "white", flex: 1 }}
+                  />
+                ) : (
+                  <ToDoText
+                    style={{
+                      textDecorationLine: todo.isDone ? "line-through" : "none",
+                    }}
+                  >
+                    {todo.text}
+                  </ToDoText>
+                )}
+                <IconBox>
                   <TouchableOpacity onPress={() => setDone(todo.id)}>
                     <Ionicons
                       name="ios-checkbox-sharp"
@@ -123,12 +173,14 @@ export default function App() {
                       color="black"
                     />
                   </TouchableOpacity>
-                  <SimpleLineIcons name="note" size={24} color="black" />
+                  <TouchableOpacity onPress={() => setEdit(todo.id)}>
+                    <SimpleLineIcons name="note" size={24} color="black" />
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
                     <FontAwesome name="trash-o" size={24} color="black" />
                   </TouchableOpacity>
-                </View>
-              </View>
+                </IconBox>
+              </ToDo>
             );
           }
         })}
@@ -154,18 +206,6 @@ export default function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  task: {
-    flexDirection: "row",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    backgroundColor: "#D9D9D9",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-});
-
 // Buttons
 const ButtonBox = styled.View`
   width: 100%;
@@ -177,7 +217,6 @@ const ButtonBox = styled.View`
 const Buttons = styled.TouchableOpacity`
   width: 110px;
   height: 50px;
-  /* background-color: gray; */
   color: black;
   justify-content: center;
   align-items: center;
@@ -202,11 +241,10 @@ const StyledTextInput = styled.TextInput`
   border: 1.5px solid black;
 `;
 
-// // Todo List
-// const ToDoList = styled.View`
-//   justify-content: center;
-//   align-items: center;
-// `;
+const ToDoList = styled.View`
+  justify-content: center;
+  align-items: center;
+`;
 
 const ToDo = styled.View`
   flex-direction: row;
