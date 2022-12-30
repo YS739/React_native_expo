@@ -1,5 +1,13 @@
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  Alert,
+} from "react-native";
 import styled from "@emotion/native";
 import { useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -9,9 +17,10 @@ import { SimpleLineIcons } from "@expo/vector-icons";
 export default function App() {
   // input에 입력된 내용 받아오기
   const [text, setText] = useState("");
-
   // Add todo
   const [todos, setTodos] = useState([]);
+  // 버튼 눌렀을 때 색 변경
+  const [category, setCategory] = useState("js"); //js, react, ct
 
   const newTodo = {
     id: Date.now(),
@@ -26,17 +35,35 @@ export default function App() {
     setText("");
   };
 
-  // 버튼 눌렀을 때 색 변경
-  const [category, setCategory] = useState("js");
+  // 완료 상태 변경
+  const setDone = (id) => {
+    const newTodos = [...todos];
+    const idx = newTodos.findIndex((todo) => todo.id === id);
+    newTodos[idx].isDone = !newTodos[idx].isDone;
+    setTodos(newTodos);
+  };
 
-  // 완료 상태 변경(체크박스 이모티콘 클릭)
-  // 1. id를 매개변수로 받는다.
-  // 2. id에 해당하는 배열의 요소를 찾는다.
-  // 3. 그 배열의 요소에 isDone 값을 찾아 setTodo
+  // 삭제하기
+  const deleteTodo = (id) => {
+    Alert.alert("Todo 삭제", "정말 삭제하시겠습니까?"),
+      [
+        {
+          text: "취소",
+          style: "cancel",
+          onPress: () => console.log("취소 클릭!"),
+        },
+        {
+          text: "삭제",
+          onPress: () => {
+            const newTodos = todos.filter((todo) => todo.id !== id);
+            setTodos(newTodos);
+          },
+        },
+      ];
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      {/* flex:1 을 안 쓰면 내용이 아래로 stretch 되지 않아 상단에 압축된 것처럼 보임 */}
       <StatusBar style="auto" />
       {/* Category buttons */}
       <ButtonBox>
@@ -80,27 +107,64 @@ export default function App() {
         {todos.map((todo) => {
           if (category === todo.category) {
             return (
-              <ToDoList key={todo.id}>
-                <ToDo>
-                  <ToDoText>{todo.text}</ToDoText>
-                  <IconBox>
+              <View key={todo.id} style={styles.task}>
+                <Text
+                  style={{
+                    textDecorationLine: todo.isDone ? "line-through" : "none",
+                  }}
+                >
+                  {todo.text}
+                </Text>
+                <View style={{ flexDirection: "row" }}>
+                  <TouchableOpacity onPress={() => setDone(todo.id)}>
                     <Ionicons
                       name="ios-checkbox-sharp"
                       size={24}
                       color="black"
-                    />{" "}
-                    <SimpleLineIcons name="note" size={24} color="black" />
+                    />
+                  </TouchableOpacity>
+                  <SimpleLineIcons name="note" size={24} color="black" />
+                  <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
                     <FontAwesome name="trash-o" size={24} color="black" />
-                  </IconBox>
-                </ToDo>
-              </ToDoList>
+                  </TouchableOpacity>
+                </View>
+              </View>
             );
           }
         })}
       </ScrollView>
+      {/* <ScrollView>
+        {todos.map((todo) => {
+          console.log(todos);
+          if (category === todo.category) {
+            return (
+              <View key={todo.id}>
+                <Text>{todo.text}</Text>
+                <IconBox>
+                  <Ionicons name="ios-checkbox-sharp" size={24} color="black" />
+                  <SimpleLineIcons name="note" size={24} color="black" />
+                  <FontAwesome name="trash-o" size={24} color="black" />
+                </IconBox>
+              </View>
+            );
+          }
+        })}
+      </ScrollView> */}
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  task: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    backgroundColor: "#D9D9D9",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+});
 
 // Buttons
 const ButtonBox = styled.View`
@@ -138,22 +202,19 @@ const StyledTextInput = styled.TextInput`
   border: 1.5px solid black;
 `;
 
-// Todo List
-const ToDoList = styled.View`
-  justify-content: center;
-  align-items: center;
-`;
+// // Todo List
+// const ToDoList = styled.View`
+//   justify-content: center;
+//   align-items: center;
+// `;
 
 const ToDo = styled.View`
   flex-direction: row;
-  width: 90%;
-  height: 50px;
   margin-bottom: 10px;
   justify-content: space-between;
   align-items: center;
   background-color: lightgray;
   padding: 0 10px;
-  font-weight: 900;
 `;
 
 const ToDoText = styled.Text`
