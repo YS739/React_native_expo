@@ -11,7 +11,7 @@ export default function App() {
   const [text, setText] = useState("");
 
   // Add todo
-  const [todos, setTodos] = useState({});
+  const [todos, setTodos] = useState([]);
 
   const newTodo = {
     id: Date.now(),
@@ -29,7 +29,7 @@ export default function App() {
   // 버튼 눌렀을 때 색 변경
   const [category, setCategory] = useState("js");
 
-  // 체크박스 이모티콘 클릭 했을 때
+  // 완료 상태 변경(체크박스 이모티콘 클릭)
   // 1. id를 매개변수로 받는다.
   // 2. id에 해당하는 배열의 요소를 찾는다.
   // 3. 그 배열의 요소에 isDone 값을 찾아 setTodo
@@ -84,7 +84,11 @@ export default function App() {
                 <ToDo>
                   <ToDoText>{todo.text}</ToDoText>
                   <IconBox>
-                    <Ionicons name="checkbox-sharp" size={24} color="black" />
+                    <Ionicons
+                      name="ios-checkbox-sharp"
+                      size={24}
+                      color="black"
+                    />{" "}
                     <SimpleLineIcons name="note" size={24} color="black" />
                     <FontAwesome name="trash-o" size={24} color="black" />
                   </IconBox>
