@@ -12,8 +12,11 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
+<<<<<<< HEAD
 import { collection, addDoc } from "./Firebase/firestore";
 import { dbService } from "./Firebase";
+=======
+>>>>>>> parent of 4b8b0fb (Implement Maintain states on Refresh)
 
 export default function App() {
   const getTodo = async () => {
@@ -33,7 +36,7 @@ export default function App() {
   // deleteDoc(doc(dbService, "todoList", id))
 
   const [todos, setTodos] = useState([]);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("js");
   const [text, setText] = useState("");
   const [editText, setEditText] = useState("");
 
@@ -90,11 +93,14 @@ export default function App() {
     setEditText("");
   };
 
+<<<<<<< HEAD
   // const setCat = async (cat) => {
   //   setCategory(cat);
   //   await AsyncStorage.setItem("category", cat);
   // };
 
+=======
+>>>>>>> parent of 4b8b0fb (Implement Maintain states on Refresh)
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
