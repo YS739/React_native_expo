@@ -11,32 +11,12 @@ import {
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
-import { useState } from "react";
-<<<<<<< HEAD
-import { collection, addDoc } from "./Firebase/firestore";
-import { dbService } from "./Firebase";
-=======
->>>>>>> parent of 4b8b0fb (Implement Maintain states on Refresh)
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function App() {
-  const getTodo = async () => {
-    const docRef = collection(dbService, "todoList");
-    const docSnap = await getDocs(docRef);
-
-    docSnap.forEach((doc) => {
-      console.log(doc.data);
-    });
-  };
-  getTodo();
-
-  // 수정하기
-  // const todoRef = doc(dbService, "todoList", id);
-  // updateDoc(todoRef, { text: newTodo });
-  // 삭제하기
-  // deleteDoc(doc(dbService, "todoList", id))
-
   const [todos, setTodos] = useState([]);
-  const [category, setCategory] = useState("js");
+  const [category, setCategory] = useState("");
   const [text, setText] = useState("");
   const [editText, setEditText] = useState("");
 
@@ -49,8 +29,7 @@ export default function App() {
   };
 
   const addTodo = () => {
-    addDoc(collection(dbService, "todoList"), newTodo);
-    setTodos([...todos, newTodo]);
+    setTodos((prev) => [...prev, newTodo]);
     setText("");
   };
 
@@ -93,20 +72,35 @@ export default function App() {
     setEditText("");
   };
 
-<<<<<<< HEAD
-  // const setCat = async (cat) => {
-  //   setCategory(cat);
-  //   await AsyncStorage.setItem("category", cat);
-  // };
+  const setCat = async (cat) => {
+    setCategory(cat);
+    await AsyncStorage.setItem("category", cat);
+  };
 
-=======
->>>>>>> parent of 4b8b0fb (Implement Maintain states on Refresh)
+  useEffect(() => {
+    const saveTodos = async () => {
+      await AsyncStorage.setItem("todos", JSON.stringify(todos));
+    };
+    if (todos.length > 0) saveTodos();
+  }, [todos]);
+
+  useEffect(() => {
+    const getDate = async () => {
+      const resp_todos = await AsyncStorage.getItem("todos");
+      const resp_cat = await AsyncStorage.getItem("category"); // undefined / null
+
+      setTodos(JSON.parse(resp_todos) ?? []);
+      setCategory(resp_cat ?? "js");
+    };
+    getDate();
+  }, []);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
       <View style={styles.buttonBox}>
         <TouchableOpacity
-          onPress={() => setCategory("js")}
+          onPress={() => setCat("js")}
           style={{
             ...styles.button,
             backgroundColor: category === "js" ? "#0FBCF9" : "gray",
@@ -115,7 +109,7 @@ export default function App() {
           <Text style={styles.buttonText}>Javascript</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCategory("react")}
+          onPress={() => setCat("react")}
           style={{
             ...styles.button,
             backgroundColor: category === "react" ? "#0FBCF9" : "gray",
@@ -124,7 +118,7 @@ export default function App() {
           <Text style={styles.buttonText}>React</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCategory("ct")}
+          onPress={() => setCat("ct")}
           style={{
             ...styles.button,
             backgroundColor: category === "ct" ? "#0FBCF9" : "gray",
