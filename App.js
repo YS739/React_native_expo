@@ -12,95 +12,99 @@ import {
 import { AntDesign } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { dbService } from "./Firebase";
 
 export default function App() {
   const [todos, setTodos] = useState([]);
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState("js");
   const [text, setText] = useState("");
   const [editText, setEditText] = useState("");
 
-  const newTodo = {
-    id: Date.now(),
-    text,
-    isDone: false,
-    isEdit: false,
-    category,
+  useEffect(() => {
+    getTodos();
+  }, [todos]);
+
+  const getTodos = async () => {
+    const array = [];
+    const querySnapshot = await getDocs(collection(dbService, "todoList"));
+    querySnapshot.forEach((doc) => {
+      array.push({ ...doc.data(), docId: doc.id });
+    });
+    return setTodos(array);
   };
 
-  const addTodo = () => {
-    setTodos((prev) => [...prev, newTodo]);
+  const addTodo = async () => {
+    try {
+      const docRef = await addDoc(collection(dbService, "todoList"), {
+        id: Date.now(),
+        text,
+        isDone: false,
+        isEdit: false,
+        category,
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
     setText("");
   };
 
-  const setDone = (id) => {
-    const newTodos = [...todos];
-    const idx = newTodos.findIndex((todo) => todo.id === id);
-    newTodos[idx].isDone = !newTodos[idx].isDone;
-    setTodos(newTodos);
+  const setDone = async (id) => {
+    const index = todos.findIndex((todo) => todo.docId === id);
+    const todoRef = doc(dbService, "todoList", id);
+    await updateDoc(todoRef, {
+      isDone: !todos[index].isDone,
+    });
   };
 
   const deleteTodo = (id) => {
     Alert.alert("Todo 삭제", "정말 삭제하시겠습니까?", [
       {
-        text: "Cancel",
+        text: "취소",
+        style: "cancel",
         onPress: () => console.log("취소 버튼!"),
       },
       {
-        text: "OK",
-        onPress: () => {
-          const newTodos = todos.filter((todo) => todo.id !== id);
-          setTodos(newTodos);
+        text: "삭제",
+        style: "destructive",
+        onPress: async () => {
+          await deleteDoc(doc(dbService, "todoList", id));
         },
       },
     ]);
   };
 
-  const setEdit = (id) => {
-    const newTodos = [...todos];
-    const idx = newTodos.findIndex((todo) => todo.id === id);
-    newTodos[idx].isEdit = !newTodos[idx].isEdit;
-    setTodos(newTodos);
+  const setEdit = async (id) => {
+    const index = todos.findIndex((todo) => todo.docId === id);
+    const todoRef = doc(dbService, "todoList", id);
+    await updateDoc(todoRef, {
+      isEdit: !todos[index].isEdit,
+    });
   };
 
-  const editTodo = (id) => {
-    const newTodos = [...todos];
-    const idx = newTodos.findIndex((todo) => todo.id === id);
-    newTodos[idx].text = editText;
-    newTodos[idx].isEdit = false;
-    setTodos(newTodos);
+  const editTodo = async (id) => {
+    const todoRef = doc(dbService, "todoList", id);
+    await updateDoc(todoRef, {
+      text: editText,
+      isEdit: false,
+    });
     setEditText("");
   };
-
-  const setCat = async (cat) => {
-    setCategory(cat);
-    await AsyncStorage.setItem("category", cat);
-  };
-
-  useEffect(() => {
-    const saveTodos = async () => {
-      await AsyncStorage.setItem("todos", JSON.stringify(todos));
-    };
-    if (todos.length > 0) saveTodos();
-  }, [todos]);
-
-  useEffect(() => {
-    const getDate = async () => {
-      const resp_todos = await AsyncStorage.getItem("todos");
-      const resp_cat = await AsyncStorage.getItem("category"); // undefined / null
-
-      setTodos(JSON.parse(resp_todos) ?? []);
-      setCategory(resp_cat ?? "js");
-    };
-    getDate();
-  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
       <View style={styles.buttonBox}>
         <TouchableOpacity
-          onPress={() => setCat("js")}
+          onPress={() => setCategory("js")}
           style={{
             ...styles.button,
             backgroundColor: category === "js" ? "#0FBCF9" : "gray",
@@ -109,7 +113,7 @@ export default function App() {
           <Text style={styles.buttonText}>Javascript</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCat("react")}
+          onPress={() => setCategory("react")}
           style={{
             ...styles.button,
             backgroundColor: category === "react" ? "#0FBCF9" : "gray",
@@ -118,7 +122,7 @@ export default function App() {
           <Text style={styles.buttonText}>React</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCat("ct")}
+          onPress={() => setCategory("ct")}
           style={{
             ...styles.button,
             backgroundColor: category === "ct" ? "#0FBCF9" : "gray",
@@ -137,13 +141,13 @@ export default function App() {
         />
       </View>
       <ScrollView>
-        {todos.map((todo) => {
+        {todos?.map((todo) => {
           if (category === todo.category) {
             return (
               <View key={todo.id} style={styles.todoWrapper}>
                 {todo.isEdit ? (
                   <TextInput
-                    onSubmitEditing={() => editTodo(todo.id)}
+                    onSubmitEditing={() => editTodo(todo.docId)}
                     value={editText}
                     onChangeText={setEditText}
                     style={{ backgroundColor: "white", flex: 1 }}
@@ -159,10 +163,10 @@ export default function App() {
                 )}
 
                 <View style={{ flexDirection: "row" }}>
-                  <TouchableOpacity onPress={() => setDone(todo.id)}>
+                  <TouchableOpacity onPress={() => setDone(todo.docId)}>
                     <AntDesign name="checksquare" size={24} color="black" />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setEdit(todo.id)}>
+                  <TouchableOpacity onPress={() => setEdit(todo.docId)}>
                     <Feather
                       style={{ marginLeft: 10 }}
                       name="edit"
@@ -170,7 +174,7 @@ export default function App() {
                       color="black"
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
+                  <TouchableOpacity onPress={() => deleteTodo(todo.docId)}>
                     <AntDesign
                       style={{ marginLeft: 10 }}
                       name="delete"
