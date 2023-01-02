@@ -1,11 +1,11 @@
 import React from "react";
 import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 
-const Buttons = ({ setCategory, category }) => {
+const Buttons = ({ setCat, category }) => {
   return (
     <View style={styles.buttonBox}>
       <TouchableOpacity
-        onPress={() => setCategory("js")}
+        onPress={() => setCat("js")}
         style={{
           ...styles.button,
           backgroundColor: category === "js" ? "#0FBCF9" : "gray",
@@ -14,7 +14,7 @@ const Buttons = ({ setCategory, category }) => {
         <Text style={styles.buttonText}>Javascript</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => setCategory("react")}
+        onPress={() => setCat("react")}
         style={{
           ...styles.button,
           backgroundColor: category === "react" ? "#0FBCF9" : "gray",
@@ -23,7 +23,7 @@ const Buttons = ({ setCategory, category }) => {
         <Text style={styles.buttonText}>React</Text>
       </TouchableOpacity>
       <TouchableOpacity
-        onPress={() => setCategory("ct")}
+        onPress={() => setCat("ct")}
         style={{
           ...styles.button,
           backgroundColor: category === "ct" ? "#0FBCF9" : "gray",

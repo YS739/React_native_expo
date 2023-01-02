@@ -13,7 +13,6 @@ const Todo = ({
   setDone,
   setEdit,
   editTodo,
-  editText,
   setEditText,
   deleteTodo,
 }) => {
@@ -21,8 +20,8 @@ const Todo = ({
     <View key={todo.id} style={styles.todoWrapper}>
       {todo.isEdit ? (
         <TextInput
-          onSubmitEditing={() => editTodo(todo.docId)}
-          value={editText}
+          onSubmitEditing={() => editTodo(todo.id)}
+          defaultValue={todo.text}
           onChangeText={setEditText}
           style={{ backgroundColor: "white", flex: 1 }}
         />
@@ -37,10 +36,10 @@ const Todo = ({
       )}
 
       <View style={{ flexDirection: "row" }}>
-        <TouchableOpacity onPress={() => setDone(todo.docId)}>
+        <TouchableOpacity onPress={() => setDone(todo.id)}>
           <AntDesign name="checksquare" size={24} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setEdit(todo.docId)}>
+        <TouchableOpacity onPress={() => setEdit(todo.id)}>
           <Feather
             style={{ marginLeft: 10 }}
             name="edit"
@@ -48,7 +47,7 @@ const Todo = ({
             color="black"
           />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => deleteTodo(todo.docId)}>
+        <TouchableOpacity onPress={() => deleteTodo(todo.id)}>
           <AntDesign
             style={{ marginLeft: 10 }}
             name="delete"

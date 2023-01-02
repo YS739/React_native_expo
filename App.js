@@ -9,12 +9,16 @@ import {
 } from "react-native";
 import { useEffect, useState } from "react";
 import {
+  onSnapshot,
+  query,
   collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  updateDoc,
   doc,
+  orderBy,
+  addDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { dbService } from "./Firebase";
 import Buttons from "./components/Buttons";
@@ -22,45 +26,43 @@ import Todo from "./components/Todo";
 
 export default function App() {
   const [todos, setTodos] = useState([]);
-  const [category, setCategory] = useState("js");
+  const [category, setCategory] = useState("");
   const [text, setText] = useState("");
   const [editText, setEditText] = useState("");
 
-  useEffect(() => {
-    getTodos();
-  }, [todos]);
-
-  const getTodos = async () => {
-    const array = [];
-    const querySnapshot = await getDocs(collection(dbService, "todoList"));
-    querySnapshot.forEach((doc) => {
-      array.push({ ...doc.data(), docId: doc.id });
-    });
-    return setTodos(array);
+  const newTodo = {
+    text,
+    isDone: false,
+    isEdit: false,
+    category,
+    createdAt: Date.now(),
   };
 
   const addTodo = async () => {
-    try {
-      const docRef = await addDoc(collection(dbService, "todoList"), {
-        id: Date.now(),
-        text,
-        isDone: false,
-        isEdit: false,
-        category,
-      });
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
+    await addDoc(collection(dbService, "todoList"), newTodo);
     setText("");
   };
 
   const setDone = async (id) => {
-    const index = todos.findIndex((todo) => todo.docId === id);
-    const todoRef = doc(dbService, "todoList", id);
-    await updateDoc(todoRef, {
-      isDone: !todos[index].isDone,
+    const idx = todos.findIndex((todo) => todo.id === id);
+    await updateDoc(doc(dbService, "todoList", id), {
+      isDone: !todos[idx].isDone,
     });
+  };
+
+  const setEdit = async (id) => {
+    const idx = todos.findIndex((todo) => todo.id === id);
+    await updateDoc(doc(dbService, "todoList", id), {
+      isEdit: !todos[idx].isEdit,
+    });
+  };
+
+  const editTodo = async (id) => {
+    await updateDoc(doc(dbService, "todoList", id), {
+      text: editText,
+      isEdit: false,
+    });
+    setEditText("");
   };
 
   const deleteTodo = (id) => {
@@ -68,7 +70,7 @@ export default function App() {
       {
         text: "취소",
         style: "cancel",
-        onPress: () => console.log("취소 버튼!"),
+        onPress: () => console.log("취소"),
       },
       {
         text: "삭제",
@@ -80,27 +82,46 @@ export default function App() {
     ]);
   };
 
-  const setEdit = async (id) => {
-    const index = todos.findIndex((todo) => todo.docId === id);
-    const todoRef = doc(dbService, "todoList", id);
-    await updateDoc(todoRef, {
-      isEdit: !todos[index].isEdit,
+  // category 위치 저장하기
+  const setCat = async (cat) => {
+    setCategory(cat);
+    await updateDoc(doc(dbService, "category", "currentCategory"), {
+      category: cat,
     });
   };
 
-  const editTodo = async (id) => {
-    const todoRef = doc(dbService, "todoList", id);
-    await updateDoc(todoRef, {
-      text: editText,
-      isEdit: false,
+  // firebase에서 getData
+  useEffect(() => {
+    const q = query(
+      collection(dbService, "todoList"),
+      orderBy("createdAt", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+      const newTodos = snapshot.docs.map((doc) => {
+        const newTodo = {
+          id: doc.id,
+          ...doc.data(),
+        };
+        return newTodo;
+      });
+      setTodos(newTodos);
     });
-    setEditText("");
-  };
+
+    // category 위치 불러오기
+    const getCategory = async () => {
+      const snapshot = await getDoc(
+        doc(dbService, "category", "currentCategory")
+      );
+      setCategory(snapshot.data().category);
+    };
+    getCategory();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
-      <Buttons setCategory={setCategory} category={category} />
+      <Buttons setCat={setCat} category={category} />
       <View style={styles.inputWrapper}>
         <TextInput
           placeholder="Enter your task"
@@ -111,17 +132,17 @@ export default function App() {
         />
       </View>
       <ScrollView>
-        {todos?.map((todo) => {
+        {todos.map((todo) => {
           if (category === todo.category) {
             return (
               <Todo
                 key={todo.id}
+                setEditText={setEditText}
+                editText={editText}
                 todo={todo}
+                editTodo={editTodo}
                 setDone={setDone}
                 setEdit={setEdit}
-                editTodo={editTodo}
-                editText={editText}
-                setEditText={setEditText}
                 deleteTodo={deleteTodo}
               />
             );
