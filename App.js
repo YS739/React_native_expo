@@ -1,26 +1,24 @@
 import { StatusBar } from "expo-status-bar";
 import {
   SafeAreaView,
+  ScrollView,
   StyleSheet,
-  TouchableOpacity,
-  Text,
   View,
   TextInput,
-  ScrollView,
   Alert,
 } from "react-native";
-import { AntDesign } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
   collection,
   addDoc,
   getDocs,
   deleteDoc,
-  doc,
   updateDoc,
+  doc,
 } from "firebase/firestore";
 import { dbService } from "./Firebase";
+import Buttons from "./components/Buttons";
+import Todo from "./components/Todo";
 
 export default function App() {
   const [todos, setTodos] = useState([]);
@@ -102,35 +100,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="auto" />
-      <View style={styles.buttonBox}>
-        <TouchableOpacity
-          onPress={() => setCategory("js")}
-          style={{
-            ...styles.button,
-            backgroundColor: category === "js" ? "#0FBCF9" : "gray",
-          }}
-        >
-          <Text style={styles.buttonText}>Javascript</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setCategory("react")}
-          style={{
-            ...styles.button,
-            backgroundColor: category === "react" ? "#0FBCF9" : "gray",
-          }}
-        >
-          <Text style={styles.buttonText}>React</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setCategory("ct")}
-          style={{
-            ...styles.button,
-            backgroundColor: category === "ct" ? "#0FBCF9" : "gray",
-          }}
-        >
-          <Text style={styles.buttonText}>Coding Test</Text>
-        </TouchableOpacity>
-      </View>
+      <Buttons setCategory={setCategory} category={category} />
       <View style={styles.inputWrapper}>
         <TextInput
           placeholder="Enter your task"
@@ -144,46 +114,16 @@ export default function App() {
         {todos?.map((todo) => {
           if (category === todo.category) {
             return (
-              <View key={todo.id} style={styles.todoWrapper}>
-                {todo.isEdit ? (
-                  <TextInput
-                    onSubmitEditing={() => editTodo(todo.docId)}
-                    value={editText}
-                    onChangeText={setEditText}
-                    style={{ backgroundColor: "white", flex: 1 }}
-                  />
-                ) : (
-                  <Text
-                    style={{
-                      textDecorationLine: todo.isDone ? "line-through" : "none",
-                    }}
-                  >
-                    {todo.text}
-                  </Text>
-                )}
-
-                <View style={{ flexDirection: "row" }}>
-                  <TouchableOpacity onPress={() => setDone(todo.docId)}>
-                    <AntDesign name="checksquare" size={24} color="black" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setEdit(todo.docId)}>
-                    <Feather
-                      style={{ marginLeft: 10 }}
-                      name="edit"
-                      size={24}
-                      color="black"
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => deleteTodo(todo.docId)}>
-                    <AntDesign
-                      style={{ marginLeft: 10 }}
-                      name="delete"
-                      size={24}
-                      color="black"
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <Todo
+                key={todo.id}
+                todo={todo}
+                setDone={setDone}
+                setEdit={setEdit}
+                editTodo={editTodo}
+                editText={editText}
+                setEditText={setEditText}
+                deleteTodo={deleteTodo}
+              />
             );
           }
         })}
@@ -195,25 +135,6 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-  },
-
-  buttonBox: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginHorizontal: 10,
-  },
-
-  button: {
-    width: "30%",
-    paddingHorizontal: 10,
-    paddingVertical: 15,
-    backgroundColor: "gray",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  buttonText: {
-    fontWeight: "600",
   },
 
   inputWrapper: {
@@ -229,17 +150,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 10,
     paddingHorizontal: 20,
-  },
-
-  todoWrapper: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    marginBottom: 10,
-    marginHorizontal: 10,
-
-    backgroundColor: "lightgray",
   },
 });
